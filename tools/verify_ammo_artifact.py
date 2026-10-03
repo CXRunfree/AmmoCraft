@@ -15,7 +15,7 @@ from generate_molds import COUNTS, multi_slot, slot_core
 
 ROOT = Path(__file__).resolve().parents[1]
 version = re.search(r'^mod_version=(.+)$', (ROOT / 'gradle.properties').read_text(), re.M).group(1)
-artifact = ROOT / f'build/libs/ammocraft-{version}.jar'
+artifact = ROOT / f'build/libs/AmmoCraft-{version}.jar'
 pack = ROOT / 'tools/reference/tacz'
 # Intended batch values, independent of Java metadata and original TaCZ costs.
 METALS = {
@@ -219,9 +219,10 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
 
     assert 'BasinAmmoMoldMixin' in data('ammocraft.mixins.json')['mixins']
     assert set(data('ammocraft.mixins.json')['mixins']) == {
-        'BasinAmmoMoldMixin', 'DeployerAmmoParticlesMixin', 'DeployerFakePlayerAccessor'}
-    assert not any(name.endswith(('/BasinCasingOutputMixin.class', '/CasingOutputAccess.class')) for name in names)
+        'BasinAmmoMoldMixin', 'BasinCasingOutputMixin', 'DeployerAmmoParticlesMixin', 'DeployerFakePlayerAccessor'}
+    assert not any(name.endswith('/CasingOutputAccess.class') for name in names)
     if not source_mode:
+        assert 'cn/crtlprototypestudios/ammocraft/mixin/BasinCasingOutputMixin.class' in names
         assert list((ROOT / 'build/libs').glob('*.jar')) == [artifact], 'Build must produce only one distributable JAR'
         metadata = jar.read('META-INF/mods.toml').decode('utf-8')
         assert 'modId="ammocraft"' in metadata and f'version="{version}"' in metadata and 'displayName="AmmoCraft"' in metadata

@@ -100,6 +100,40 @@ public class AmmoPipelineTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 100)
+    public static void casingOverflowRetriesOutput(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 2, 1);
+        helper.setBlock(pos, AllBlocks.BASIN.getDefaultState().setValue(
+                com.simibubi.create.content.contraptions.processing.BasinBlock.FACING, net.minecraft.core.Direction.EAST));
+        helper.setBlock(pos.east().below(), AllBlocks.DEPOT.getDefaultState());
+        BasinTileEntity basin = (BasinTileEntity) helper.getBlockEntity(pos);
+        var receiver = helper.getBlockEntity(pos.east().below()).getCapability(
+                net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).orElseThrow(IllegalStateException::new);
+        AmmoItems.Caliber caliber = AmmoItems.CALIBERS.get(0);
+        // A full legal stack plus one stranded batch must survive a blocked receiver.
+        basin.getOutputInventory().setStackInSlot(0, new ItemStack(caliber.casing.get(), 60));
+        basin.getOutputInventory().setStackInSlot(1, new ItemStack(caliber.casing.get(), 12));
+        basin.inputInventory.setStackInSlot(0, new ItemStack(caliber.casing.get(), 3));
+        receiver.insertItem(0, new ItemStack(Items.COBBLESTONE, 64), false);
+        for (int tick = 0; tick < 3; tick++) basin.tick();
+        check(helper, receiver.getStackInSlot(0).is(Items.COBBLESTONE), "Blocked receiver must remain untouched");
+        int received = 0;
+        receiver.extractItem(0, 64, false);
+        for (int tick = 0; tick < 12; tick++) {
+            basin.tick();
+            for (int slot = 0; slot < receiver.getSlots(); slot++) {
+                ItemStack extracted = receiver.extractItem(slot, 64, false);
+                check(helper, extracted.isEmpty() || (extracted.is(caliber.casing.get()) && extracted.getCount() <= 60),
+                        "Retry must transfer legal casing stacks");
+                if (extracted.is(caliber.casing.get())) received += extracted.getCount();
+            }
+        }
+        check(helper, received == 72, "Must retry output after blockage: expected 72, got " + received);
+        check(helper, basin.getOutputInventory().isEmpty(), "The extra 12 casings must not remain stranded");
+        check(helper, basin.inputInventory.getStackInSlot(0).getCount() == 3, "Retry must preserve input casings");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
     public static void bulkCasingManufacturingWaitsForOutput(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 2, 1);
         helper.setBlock(pos, AllBlocks.BASIN.getDefaultState().setValue(
@@ -127,7 +161,7 @@ public class AmmoPipelineTests {
                 for (int tick = 0; tick < 3; tick++) basin.tick();
                 for (int slot = 0; slot < receiver.getSlots(); slot++) {
                     ItemStack output = receiver.extractItem(slot, 64, false);
-                    check(helper, output.isEmpty() || (output.is(caliber.casing.get()) && output.getCount() <= 64),
+                    check(helper, output.isEmpty() || (output.is(caliber.casing.get()) && output.getCount() <= 60),
                             "Receiver must get legal casing stacks");
                     received += output.getCount();
                 }
