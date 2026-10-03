@@ -1,0 +1,63 @@
+{
+  "type": "ammocraft:ammo_mixing",
+  "ingredients": [
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "ammocraft:lapis_dust"
+    },
+    {
+      "item": "ammocraft:lapis_dust"
+    },
+    {
+      "item": "ammocraft:lapis_dust"
+    },
+    {
+      "item": "ammocraft:lapis_dust"
+    },
+    {
+      "item": "ammocraft:lapis_dust"
+    },
+    {
+      "item": "ammocraft:lapis_dust"
+    },
+    {
+      "item": "minecraft:blaze_powder"
+    }
+  ],
+  "results": [
+    {
+      "item": "ammocraft:ammo_powder_50bmg",
+      "count": 12
+    }
+  ],
+  "processingTime": 256
+}

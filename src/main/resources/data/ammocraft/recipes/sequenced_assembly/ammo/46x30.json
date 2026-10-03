@@ -1,0 +1,49 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "ammocraft:casing_46x30"
+  },
+  "transitionalItem": {
+    "item": "ammocraft:incomplete_46x30"
+  },
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_46x30"
+        },
+        {
+          "item": "ammocraft:ammo_powder_46x30"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_46x30"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_46x30"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_46x30"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "item": "tacz:ammo",
+      "nbt": {
+        "AmmoId": "tacz:46x30"
+      }
+    }
+  ],
+  "loops": 1
+}

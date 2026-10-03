@@ -1,0 +1,21 @@
+{
+  "type": "ammocraft:ammo_mixing",
+  "ingredients": [
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
+  ],
+  "results": [
+    {
+      "item": "ammocraft:ammo_powder_357mag",
+      "count": 24
+    }
+  ],
+  "processingTime": 128
+}

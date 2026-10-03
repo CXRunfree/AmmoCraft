@@ -1,0 +1,49 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "ammocraft:casing_rpg_rocket"
+  },
+  "transitionalItem": {
+    "item": "ammocraft:incomplete_rpg_rocket"
+  },
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_rpg_rocket"
+        },
+        {
+          "item": "ammocraft:ammo_powder_rpg_rocket"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_rpg_rocket"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_rpg_rocket"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_rpg_rocket"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "item": "tacz:ammo",
+      "nbt": {
+        "AmmoId": "tacz:rpg_rocket"
+      }
+    }
+  ],
+  "loops": 1
+}

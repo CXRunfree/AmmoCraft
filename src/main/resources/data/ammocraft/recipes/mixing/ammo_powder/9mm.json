@@ -1,0 +1,15 @@
+{
+  "type": "ammocraft:ammo_mixing",
+  "ingredients": [
+    {
+      "item": "minecraft:gunpowder"
+    }
+  ],
+  "results": [
+    {
+      "item": "ammocraft:ammo_powder_9mm",
+      "count": 24
+    }
+  ],
+  "processingTime": 96
+}

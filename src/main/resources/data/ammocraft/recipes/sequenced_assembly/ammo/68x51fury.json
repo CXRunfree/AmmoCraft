@@ -1,0 +1,49 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "ammocraft:casing_68x51fury"
+  },
+  "transitionalItem": {
+    "item": "ammocraft:incomplete_68x51fury"
+  },
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_68x51fury"
+        },
+        {
+          "item": "ammocraft:ammo_powder_68x51fury"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_68x51fury"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_68x51fury"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_68x51fury"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "item": "tacz:ammo",
+      "nbt": {
+        "AmmoId": "tacz:68x51fury"
+      }
+    }
+  ],
+  "loops": 1
+}

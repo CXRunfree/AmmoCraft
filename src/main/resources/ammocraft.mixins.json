@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "cn.crtlprototypestudios.ammocraft.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "ammocraft.refmap.json",
+  "mixins": [
+    "BasinAmmoMoldMixin",
+    "BasinCasingOutputMixin",
+    "DeployerAmmoParticlesMixin",
+    "DeployerFakePlayerAccessor"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}

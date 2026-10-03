@@ -1,0 +1,19 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "type": "forge:partial_nbt",
+      "item": "tacz:ammo",
+      "nbt": "{AmmoId:\"tacz:30_06\"}"
+    },
+    {
+      "item": "ammocraft:ammo_disassembly_tool"
+    }
+  ],
+  "results": [
+    {
+      "item": "ammocraft:ammo_powder_30_06"
+    }
+  ],
+  "keepHeldItem": true
+}

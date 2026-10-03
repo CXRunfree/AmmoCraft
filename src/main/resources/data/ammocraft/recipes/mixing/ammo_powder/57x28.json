@@ -1,0 +1,24 @@
+{
+  "type": "ammocraft:ammo_mixing",
+  "ingredients": [
+    {
+      "item": "minecraft:gunpowder"
+    },
+    {
+      "item": "ammocraft:lapis_dust"
+    },
+    {
+      "item": "ammocraft:lapis_dust"
+    },
+    {
+      "item": "ammocraft:lapis_dust"
+    }
+  ],
+  "results": [
+    {
+      "item": "ammocraft:ammo_powder_57x28",
+      "count": 24
+    }
+  ],
+  "processingTime": 128
+}

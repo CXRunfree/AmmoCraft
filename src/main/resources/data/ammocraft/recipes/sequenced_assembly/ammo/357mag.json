@@ -1,0 +1,49 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "ammocraft:casing_357mag"
+  },
+  "transitionalItem": {
+    "item": "ammocraft:incomplete_357mag"
+  },
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_357mag"
+        },
+        {
+          "item": "ammocraft:ammo_powder_357mag"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_357mag"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_357mag"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_357mag"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "item": "tacz:ammo",
+      "nbt": {
+        "AmmoId": "tacz:357mag"
+      }
+    }
+  ],
+  "loops": 1
+}

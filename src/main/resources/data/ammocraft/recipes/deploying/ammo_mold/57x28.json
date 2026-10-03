@@ -1,0 +1,19 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "ammocraft:blank_ammo_mold"
+    },
+    {
+      "type": "forge:partial_nbt",
+      "item": "tacz:ammo",
+      "nbt": "{AmmoId:\"tacz:57x28\"}"
+    }
+  ],
+  "results": [
+    {
+      "item": "ammocraft:ammo_mold_57x28"
+    }
+  ],
+  "keepHeldItem": true
+}

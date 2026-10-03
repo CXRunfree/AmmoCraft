@@ -1,0 +1,65 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "ammocraft:casing_12g"
+  },
+  "transitionalItem": {
+    "item": "ammocraft:incomplete_12g"
+  },
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_12g"
+        },
+        {
+          "item": "ammocraft:ammo_powder_12g"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_12g"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_12g"
+        },
+        {
+          "item": "minecraft:iron_nugget"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_12g"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "ammocraft:incomplete_12g"
+        }
+      ],
+      "results": [
+        {
+          "item": "ammocraft:incomplete_12g"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "item": "tacz:ammo",
+      "nbt": {
+        "AmmoId": "tacz:12g"
+      }
+    }
+  ],
+  "loops": 1
+}
