@@ -6,7 +6,6 @@
   "refmap": "ammocraft.refmap.json",
   "mixins": [
     "BasinAmmoMoldMixin",
-    "BasinCasingOutputMixin",
     "DeployerAmmoParticlesMixin",
     "DeployerFakePlayerAccessor"
   ],

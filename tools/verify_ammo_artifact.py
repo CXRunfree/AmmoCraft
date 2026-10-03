@@ -66,18 +66,6 @@ def legacy(name):
 
 
 source_mode = '--resources' in sys.argv
-if source_mode:
-    capacity_source = (ROOT / 'src/main/java/cn/crtlprototypestudios/ammocraft/recipe/CasingOutputAccess.java').read_text(encoding='utf-8')
-    casing_capacity = int(re.search(r'MAX_CASINGS_PER_TYPE\s*=\s*(\d+)', capacity_source).group(1))
-    assert casing_capacity == 60
-    for caliber, (_, _, _, batch) in METALS.items():
-        assert casing_capacity % batch == 0, (caliber, 'Casing batch must divide basin capacity')
-        # The last fitting batch reaches the cap exactly; the next cannot fit.
-        stored = 0
-        while stored <= casing_capacity - batch:
-            stored += batch
-        assert stored == casing_capacity, caliber
-    print('PASS: source casing capacity is 60; all 19 batches fill it without a remainder. No runtime test performed.')
 with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifact)) as jar:
     assert jar.testzip() is None
     names = set(jar.namelist())
@@ -231,7 +219,8 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
 
     assert 'BasinAmmoMoldMixin' in data('ammocraft.mixins.json')['mixins']
     assert set(data('ammocraft.mixins.json')['mixins']) == {
-        'BasinAmmoMoldMixin', 'BasinCasingOutputMixin', 'DeployerAmmoParticlesMixin', 'DeployerFakePlayerAccessor'}
+        'BasinAmmoMoldMixin', 'DeployerAmmoParticlesMixin', 'DeployerFakePlayerAccessor'}
+    assert not any(name.endswith(('/BasinCasingOutputMixin.class', '/CasingOutputAccess.class')) for name in names)
     if not source_mode:
         assert list((ROOT / 'build/libs').glob('*.jar')) == [artifact], 'Build must produce only one distributable JAR'
         metadata = jar.read('META-INF/mods.toml').decode('utf-8')

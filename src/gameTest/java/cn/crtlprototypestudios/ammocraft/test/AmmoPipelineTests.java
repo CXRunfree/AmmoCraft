@@ -100,35 +100,6 @@ public class AmmoPipelineTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 100)
-    public static void casingOverflowRetriesOutput(GameTestHelper helper) {
-        BlockPos pos = new BlockPos(1, 2, 1);
-        helper.setBlock(pos, AllBlocks.BASIN.getDefaultState().setValue(
-                com.simibubi.create.content.contraptions.processing.BasinBlock.FACING, net.minecraft.core.Direction.EAST));
-        helper.setBlock(pos.east().below(), AllBlocks.DEPOT.getDefaultState());
-        BasinTileEntity basin = (BasinTileEntity) helper.getBlockEntity(pos);
-        var receiver = helper.getBlockEntity(pos.east().below()).getCapability(
-                net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).orElseThrow(IllegalStateException::new);
-        AmmoItems.Caliber caliber = AmmoItems.CALIBERS.get(0);
-        // Reproduce a full stack plus the reported stranded twelve-round batch.
-        basin.getOutputInventory().setStackInSlot(0, new ItemStack(caliber.casing.get(), 64));
-        basin.getOutputInventory().setStackInSlot(1, new ItemStack(caliber.casing.get(), 12));
-        receiver.insertItem(0, new ItemStack(Items.COBBLESTONE, 64), false);
-        for (int tick = 0; tick < 3; tick++) basin.tick();
-        int received = 0;
-        receiver.extractItem(0, 64, false);
-        for (int tick = 0; tick < 12; tick++) {
-            basin.tick();
-            for (int slot = 0; slot < receiver.getSlots(); slot++) {
-                ItemStack extracted = receiver.extractItem(slot, 64, false);
-                if (extracted.is(caliber.casing.get())) received += extracted.getCount();
-            }
-        }
-        check(helper, received == 76, "Must retry output after blockage: expected 76, got " + received);
-        check(helper, basin.getOutputInventory().isEmpty(), "The extra 12 casings must not remain stranded");
-        helper.succeed();
-    }
-
-    @GameTest(template = "empty", timeoutTicks = 100)
     public static void bulkCasingManufacturingWaitsForOutput(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 2, 1);
         helper.setBlock(pos, AllBlocks.BASIN.getDefaultState().setValue(
@@ -164,50 +135,6 @@ public class AmmoPipelineTests {
             check(helper, received == batches * caliber.blanks, "Bulk output count mismatch: " + caliber.id);
             check(helper, basin.inputInventory.isEmpty(), "Exactly the supplied batches of metal must be consumed");
             check(helper, basin.getOutputInventory().isEmpty(), "No casings may remain stranded");
-        }
-        helper.succeed();
-    }
-
-    @GameTest(template = "empty", timeoutTicks = 100)
-    public static void casingCapacityRequiresWholeBatch(GameTestHelper helper) {
-        BlockPos pos = new BlockPos(1, 2, 1);
-        helper.setBlock(pos, AllBlocks.BASIN.getDefaultState().setValue(
-                com.simibubi.create.content.contraptions.processing.BasinBlock.FACING, net.minecraft.core.Direction.EAST));
-        helper.setBlock(pos.east().below(), AllBlocks.DEPOT.getDefaultState());
-        BasinTileEntity basin = (BasinTileEntity) helper.getBlockEntity(pos);
-        var receiver = helper.getBlockEntity(pos.east().below()).getCapability(
-                net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).orElseThrow(IllegalStateException::new);
-        for (AmmoItems.Caliber caliber : AmmoItems.CALIBERS) {
-            clear(basin);
-            basin.getFilter().setFilter(new ItemStack(caliber.mold.get()));
-            basin.inputInventory.setStackInSlot(0, new ItemStack(Items.COPPER_INGOT, caliber.copper * 2));
-            if (caliber.iron > 0)
-                basin.inputInventory.setStackInSlot(1, new ItemStack(Items.IRON_INGOT, caliber.iron * 2));
-            basin.getOutputInventory().setStackInSlot(0, new ItemStack(caliber.casing.get(), 60 - caliber.blanks));
-            Recipe<?> recipe = helper.getLevel().getRecipeManager().byKey(
-                    new ResourceLocation("ammocraft", "mixing/ammo_blank/" + caliber.id)).orElseThrow();
-            check(helper, BasinRecipe.match(basin, recipe), "Exactly one batch of free space must allow production");
-            check(helper, BasinRecipe.apply(basin, recipe), "Existing casings must not block a fitting batch");
-            CompoundTag before = basin.inputInventory.serializeNBT();
-            check(helper, !BasinRecipe.match(basin, recipe) && !BasinRecipe.apply(basin, recipe),
-                    "Combined inventory and queued output must not exceed 60");
-            check(helper, before.equals(basin.inputInventory.serializeNBT()), "Capacity rejection must preserve input");
-            for (int tick = 0; tick < 4; tick++) basin.tick();
-            int received = 0;
-            for (int slot = 0; slot < receiver.getSlots(); slot++)
-                received += receiver.extractItem(slot, 64, false).getCount();
-            // A depot may wait for its current stack to be removed before accepting the next.
-            for (int tick = 0; tick < 4; tick++) basin.tick();
-            for (int slot = 0; slot < receiver.getSlots(); slot++)
-                received += receiver.extractItem(slot, 64, false).getCount();
-            check(helper, received == 60, "Capacity-bound output must preserve exactly 60 casings");
-            check(helper, BasinRecipe.match(basin, recipe), "Production must resume after output clears");
-            basin.getOutputInventory().setStackInSlot(0, new ItemStack(caliber.casing.get(), 61 - caliber.blanks));
-            before = basin.inputInventory.serializeNBT();
-            check(helper, !BasinRecipe.match(basin, recipe) && !BasinRecipe.apply(basin, recipe),
-                    "One less than a full batch of free space must reject production");
-            check(helper, before.equals(basin.inputInventory.serializeNBT()), "Partial room must not consume input");
-            basin.getOutputInventory().setStackInSlot(0, ItemStack.EMPTY);
         }
         helper.succeed();
     }

@@ -3,7 +3,6 @@ package cn.crtlprototypestudios.ammocraft.mixin;
 import cn.crtlprototypestudios.ammocraft.registry.AmmoItems;
 import cn.crtlprototypestudios.ammocraft.item.AmmoMoldItem;
 import cn.crtlprototypestudios.ammocraft.item.AmmoCasingItem;
-import cn.crtlprototypestudios.ammocraft.recipe.CasingOutputAccess;
 import com.simibubi.create.content.contraptions.processing.BasinRecipe;
 import com.simibubi.create.content.contraptions.processing.BasinTileEntity;
 import com.simibubi.create.foundation.tileEntity.behaviour.filtering.FilteringBehaviour;
@@ -34,11 +33,6 @@ public class BasinAmmoMoldMixin {
             at = @At("HEAD"), cancellable = true, remap = false)
     private static void ammocraft$requireMold(BasinTileEntity basin, Recipe<?> recipe, boolean simulate,
                                          CallbackInfoReturnable<Boolean> cir) {
-        if (recipe.getResultItem().getItem() instanceof AmmoCasingItem
-                && !((CasingOutputAccess) basin).ammocraft$canFitCasingBatch(recipe.getResultItem())) {
-            cir.setReturnValue(false);
-            return;
-        }
         if (recipe.getResultItem().getItem() instanceof AmmoCasingItem && !ammocraft$matchesMold(basin, recipe))
             cir.setReturnValue(false);
         for (AmmoItems.Caliber caliber : AmmoItems.CALIBERS)
