@@ -114,6 +114,7 @@ public class AmmoItems {
                     .model((c, p) -> p.generated(c::getEntry, AmmoCraft.id("item/ammo/powders/" + id)))
                     .lang(name + " Propellant").register();
             casing = AmmoCraft.REGISTRATE.item("casing_" + id, AmmoCasingItem::new)
+                    .properties(p -> p.stacksTo(60))
                     .model((c, p) -> p.generated(c::getEntry, AmmoCraft.id("item/ammo/casings/" + id)))
                     .lang(name + " Casing")
                     .tag(AllTags.AllItemTags.UPRIGHT_ON_BELT.tag)

@@ -219,7 +219,7 @@ public class AmmoPipelineTests {
             ItemStack blank = new ItemStack(caliber.casing.get());
             check(helper, !(blank.getItem() instanceof com.simibubi.create.content.contraptions.itemAssembly.SequencedAssemblyItem),
                     "Casing must be an independent plain item");
-            check(helper, blank.getMaxStackSize() == 64, "Casings must stack to 64");
+            check(helper, blank.getMaxStackSize() == 60, "Casings must stack to 60");
             check(helper, SequencedAssemblyRecipe.getRecipe(helper.getLevel(), new ItemStack(caliber.incomplete.get()),
                     AllRecipeTypes.DEPLOYING.getType(), DeployerApplicationRecipe.class).isEmpty(),
                     "Uninitialized incomplete ammo must not bypass the casing input");
