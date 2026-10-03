@@ -1,9 +1,10 @@
 """Generate all 98 AmmoCraft recipes from AmmoItems; --check verifies existing JSON."""
 import json
+from pathlib import Path
 import re
 import sys
 
-from ammo_art import ROOT
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def item(identifier):

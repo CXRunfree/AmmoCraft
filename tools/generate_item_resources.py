@@ -1,7 +1,12 @@
 """Maintain models, casing translations and the belt tag for registered ammo items."""
 import json
-from ammo_art import ROOT
-from generate_molds import COUNTS
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parents[1]
+registry = ROOT / 'src/main/java/cn/crtlprototypestudios/ammocraft/registry/AmmoItems.java'
+CALIBERS = re.findall(r'new Caliber\("([^"]+)"', registry.read_text(encoding='utf-8'))
+assert len(CALIBERS) == 19 and len(set(CALIBERS)) == 19
 
 
 def write(path, data):
@@ -15,7 +20,7 @@ def main():
     for locale in ('en_us', 'zh_cn'):
         path = assets / f'lang/{locale}.json'
         data = json.loads(path.read_text(encoding='utf-8'))
-        for ammo in COUNTS:
+        for ammo in CALIBERS:
             name = data['item.ammocraft.ammo_powder_' + ammo]
             name = name.removesuffix(' Propellant').removesuffix('火药')
             data['item.ammocraft.casing_' + ammo] = name + (' Casing' if locale == 'en_us' else '弹壳')
@@ -29,7 +34,7 @@ def main():
         write(path, data)
     write(resources / 'data/create/tags/items/upright_on_belt.json', {
         'replace': False,
-        'values': ['ammocraft:' + prefix + ammo for prefix in ('casing_', 'incomplete_') for ammo in COUNTS],
+        'values': ['ammocraft:' + prefix + ammo for prefix in ('casing_', 'incomplete_') for ammo in CALIBERS],
     })
     print('PASS: 19 independent casing models, translations and belt tags generated.')
 

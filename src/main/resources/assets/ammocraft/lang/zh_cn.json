@@ -57,9 +57,9 @@
   "item.ammocraft.ammo_powder_30_06": ".30-06 Springfield火药",
   "item.ammocraft.ammo_powder_338": ".338 Lapua Magnum火药",
   "item.ammocraft.ammo_powder_50bmg": ".50 BMG火药",
-  "item.ammocraft.ammo_powder_12g": "12 Gauge火药",
+  "item.ammocraft.ammo_powder_12g": "12号霰弹火药",
   "item.ammocraft.ammo_powder_40mm": "40mm火药",
-  "item.ammocraft.ammo_powder_rpg_rocket": "RPG Rocket火药",
+  "item.ammocraft.ammo_powder_rpg_rocket": "RPG火箭弹火药",
   "item.ammocraft.lapis_dust": "青金石粉",
   "itemGroup.ammocraft": "AmmoCraft",
   "item.ammocraft.casing_9mm": "9mm弹壳",
@@ -78,7 +78,7 @@
   "item.ammocraft.casing_30_06": ".30-06 Springfield弹壳",
   "item.ammocraft.casing_338": ".338 Lapua Magnum弹壳",
   "item.ammocraft.casing_50bmg": ".50 BMG弹壳",
-  "item.ammocraft.casing_12g": "12 Gauge弹壳",
+  "item.ammocraft.casing_12g": "12号霰弹弹壳",
   "item.ammocraft.casing_40mm": "40mm弹壳",
-  "item.ammocraft.casing_rpg_rocket": "RPG Rocket弹壳"
+  "item.ammocraft.casing_rpg_rocket": "RPG火箭弹弹壳"
 }

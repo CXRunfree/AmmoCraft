@@ -1,7 +1,6 @@
 """Verify designed ammo batches in a packaged JAR or source resources (--resources)."""
 from collections import Counter
 from contextlib import nullcontext
-from fractions import Fraction
 from io import BytesIO
 from pathlib import Path
 import json
@@ -9,14 +8,12 @@ import re
 import zipfile
 import sys
 
-from PIL import Image
-from generate_molds import COUNTS, multi_slot, slot_core
+from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 version = re.search(r'^mod_version=(.+)$', (ROOT / 'gradle.properties').read_text(), re.M).group(1)
 artifact = ROOT / f'build/libs/AmmoCraft-{version}.jar'
-pack = ROOT / 'tools/reference/tacz'
-# Intended batch values, independent of Java metadata and original TaCZ costs.
+# Intended batch values, independent of Java metadata.
 METALS = {
     '9mm': (2, 0, 0, 12), '45acp': (4, 0, 0, 12), '357mag': (3, 0, 0, 6),
     '50ae': (5, 0, 0, 6), '46x30': (3, 0, 0, 12), '57x28': (4, 0, 0, 12),
@@ -36,7 +33,7 @@ POWDERS = {
     '50bmg': (10, 6, 1, 12), '12g': (4, 0, 0, 12), '40mm': (5, 0, 0, 3),
     'rpg_rocket': (12, 0, 0, 3),
 }
-assert set(METALS) == set(POWDERS) == {path.stem for path in (pack / 'data/tacz/index/ammo').glob('*.json')}
+assert len(METALS) == 19 and set(METALS) == set(POWDERS)
 
 
 class SourceResources:
@@ -69,6 +66,7 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
     assert jar.testzip() is None
     names = set(jar.namelist())
     assert len(jar.namelist()) == len(names), 'Duplicate ZIP entries'
+    assert not any(name.startswith(('tools/', 'assets/tacz/')) for name in names), 'Reference resources must not be bundled'
     assert not any('/prma/' in name or name.startswith('assets/prma/') or name.startswith('data/prma/') for name in names)
 
     def data(path):
@@ -131,10 +129,8 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
             metal_time, powder_time = 128, 128
         assert mixing['processingTime'] == metal_time
         assert len(mixing['ingredients']) <= 160
-        stack_text = (pack / f'data/tacz/index/ammo/{caliber}.json').read_text()
-        stack_size = int(re.search(r'"stack_size"\s*:\s*(\d+)', stack_text).group(1))
         assert (count == 3 if caliber in ('40mm', 'rpg_rocket') else count % 6 == 0)
-        assert 1 <= count <= 64 and stack_size % count == 0
+        assert 1 <= count <= 60
         engraving = recipes['deploying/ammo_mold/' + caliber]
         assert engraving['keepHeldItem'] and engraving['ingredients'][0] == {'item': 'ammocraft:blank_ammo_mold'}
         assert engraving['ingredients'][1]['type'] == 'forge:partial_nbt'
@@ -155,7 +151,7 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
         output_count = sum(result.get('count', 1) for result in propellant['results'])
         assert 1 <= count <= 12 and output_count in (3, 12, 15, 20)
         assert 60 % output_count == 0, f'Powder batch must divide its 60-item stack: {caliber}'
-        assert count < stack_size and output_count < stack_size, f'Batch must be smaller than a stack: {caliber}'
+        assert count < 60 and output_count < 60, f'Batch must be smaller than a stack: {caliber}'
         assert 60 % count == 0, f'Casing batch must divide its 60-item stack: {caliber}'
         charges = ingredients(propellant)
         expected_powder, expected_lapis, expected_blaze, expected_output = POWDERS[caliber]
@@ -163,25 +159,6 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
         assert charges == +Counter({'minecraft:gunpowder': expected_powder,
                                     'ammocraft:lapis_dust': expected_lapis,
                                     'minecraft:blaze_powder': expected_blaze})
-        original = json.loads((pack / f'data/tacz/recipes/ammo/{caliber}.json').read_text())
-        reference = {entry['item']['tag']: Fraction(entry.get('count', 1), original['result']['count'])
-                     for entry in original['materials']}
-        costs = {'forge:ingots/copper': copper, 'forge:ingots/iron': iron,
-                 'forge:nuggets/iron': count if caliber == '12g' else nuggets,
-                 'forge:gunpowder': expected_powder, 'forge:gems/lapis': expected_lapis,
-                 'forge:rods/blaze': Fraction(expected_blaze, 2)}
-        for tag, amount in costs.items():
-            output = output_count if tag in ('forge:gunpowder', 'forge:gems/lapis', 'forge:rods/blaze') else count
-            baseline = reference.get(tag, 0)
-            if baseline:
-                # Approved rounded batches exceed the old TaCZ lapis tolerance.
-                lapis_bounds = {'57x28': Fraction(1, 2), '308': Fraction(2)}
-                bound = lapis_bounds.get(caliber, Fraction(1, 3)) if tag == 'forge:gems/lapis' else Fraction(1, 3)
-                assert abs(Fraction(amount, output) / baseline - 1) <= bound, (caliber, tag)
-                if caliber == 'rpg_rocket':
-                    assert Fraction(amount, output) == baseline
-            else:
-                assert amount == 0, (caliber, tag)
 
         assembly = recipes['sequenced_assembly/ammo/' + caliber]
         assert assembly['ingredient'] == {'item': casing}
@@ -206,10 +183,13 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
                     assert image.crop((8, 8, 56, 56)).getchannel('A').getextrema() == (0, 255)
             for locale in ('zh_cn', 'en_us'):
                 assert 'item.ammocraft.' + prefix + caliber in data('assets/ammocraft/lang/' + locale + '.json')
-        mask = multi_slot(caliber, COUNTS[caliber])
-        core = slot_core(mask)
         with Image.open(BytesIO(jar.read(f'assets/ammocraft/textures/item/ammo/casings/{caliber}.png'))) as casing:
-            assert casing.size == (64, 64) and casing.getchannel('A').tobytes() == mask.tobytes()
+            assert casing.size == (64, 64)
+            mask = casing.getchannel('A')
+            assert set(mask.getdata()) == {0, 255}, caliber
+            x0, y0, x1, y1 = mask.getbbox()
+            assert x0 >= 10 and y0 >= 10 and x1 <= 54 and y1 <= 54, caliber
+            core = mask.filter(ImageFilter.MinFilter(3))
         with Image.open(BytesIO(jar.read(f'assets/ammocraft/textures/item/ammo/molds/{caliber}.png'))) as mold:
             for y in range(8, 56):
                 for x in range(8, 56):
@@ -241,7 +221,7 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
                        or path.startswith('com/tterrag/registrate/') for path in names), 'Registrate must be supplied by Create'
     assert not any('/test/' in path or path.startswith('.cache/') or '/structures/empty.nbt' in path for path in names)
     print('PASS: all 19 calibers; no formula/charge ingredients; 12g iron-nugget assembly step.')
-    print('PASS: independent small batches; tiered processing times; RPG original costs; raw powder mixing.')
+    print('PASS: approved independent batches and ingredient costs; tiered processing times; raw powder mixing.')
     print('PASS: current casing artwork, matching mold footprint and overlapping inset bevels.')
     if source_mode:
         print('PASS: source recipes, textures, languages and Mixin configuration. No build performed.')

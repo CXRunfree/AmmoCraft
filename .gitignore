@@ -8,3 +8,5 @@ run/
 .settings/
 __pycache__/
 *.pyc
+tools/previews/
+tools/reference/
