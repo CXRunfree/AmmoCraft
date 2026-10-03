@@ -6,15 +6,12 @@
     },
     {
       "item": "minecraft:gunpowder"
-    },
-    {
-      "item": "minecraft:gunpowder"
     }
   ],
   "results": [
     {
       "item": "ammocraft:ammo_powder_357mag",
-      "count": 24
+      "count": 15
     }
   ],
   "processingTime": 128

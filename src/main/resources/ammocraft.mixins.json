@@ -10,5 +10,8 @@
     "DeployerAmmoParticlesMixin",
     "DeployerFakePlayerAccessor"
   ],
+  "client": [
+    "client.BasinMoldJeiMixin"
+  ],
   "injectors": { "defaultRequire": 1 }
 }

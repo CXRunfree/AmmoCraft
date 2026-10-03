@@ -56,6 +56,7 @@ repositories {
     }
     maven { url = 'https://maven.tterrag.com/' }
     maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    maven { url = 'https://maven.blamejared.com/' }
 }
 
 dependencies {
@@ -64,6 +65,8 @@ dependencies {
     implementation fg.deobf("maven.modrinth:flywheel:${flywheel_version}") { transitive = false }
     // Runtime Registrate is supplied by Create; it is never bundled here.
     compileOnly fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}")
+    // JEI is optional at runtime; only its layout API is needed for the client Mixin.
+    compileOnly fg.deobf('mezz.jei:jei-1.18.2-common-api:10.2.1.1006')
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 

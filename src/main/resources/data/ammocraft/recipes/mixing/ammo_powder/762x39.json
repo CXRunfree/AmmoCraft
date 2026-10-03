@@ -3,15 +3,12 @@
   "ingredients": [
     {
       "item": "minecraft:gunpowder"
-    },
-    {
-      "item": "minecraft:gunpowder"
     }
   ],
   "results": [
     {
       "item": "ammocraft:ammo_powder_762x39",
-      "count": 24
+      "count": 12
     }
   ],
   "processingTime": 128

@@ -11,15 +11,6 @@
       "item": "minecraft:gunpowder"
     },
     {
-      "item": "minecraft:gunpowder"
-    },
-    {
-      "item": "minecraft:gunpowder"
-    },
-    {
-      "item": "ammocraft:lapis_dust"
-    },
-    {
       "item": "ammocraft:lapis_dust"
     },
     {
@@ -29,7 +20,7 @@
   "results": [
     {
       "item": "ammocraft:ammo_powder_50ae",
-      "count": 24
+      "count": 15
     }
   ],
   "processingTime": 128

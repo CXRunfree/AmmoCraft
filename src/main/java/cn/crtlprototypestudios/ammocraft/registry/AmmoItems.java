@@ -31,19 +31,19 @@ public class AmmoItems {
 
     public static final List<Caliber> CALIBERS = List.of(
             // id, name, copper/iron/nuggets -> blanks, gunpowder/lapis dust/blaze powder -> doses
-            new Caliber("9mm", "9mm", 2, 0, 0, 12, 1, 0, 0, 24),
-            new Caliber("45acp", ".45 ACP", 4, 0, 0, 12, 2, 0, 0, 30),
-            new Caliber("357mag", ".357 Magnum", 3, 0, 0, 6, 3, 0, 0, 24),
-            new Caliber("50ae", ".50 AE", 5, 0, 0, 6, 5, 3, 0, 24),
-            new Caliber("46x30", "4.6x30mm", 3, 0, 0, 12, 1, 0, 0, 24),
-            new Caliber("57x28", "5.7x28mm", 4, 0, 0, 12, 1, 3, 0, 24),
-            new Caliber("58x42", "5.8x42mm", 4, 0, 0, 12, 2, 0, 0, 24),
-            new Caliber("68x51fury", "6.8x51mm FURY", 5, 0, 0, 12, 3, 0, 0, 24),
-            new Caliber("556x45", "5.56x45mm", 4, 0, 0, 12, 2, 0, 0, 30),
-            new Caliber("762x25", "7.62x25mm", 3, 0, 0, 12, 1, 0, 0, 24),
-            new Caliber("762x39", "7.62x39mm", 5, 0, 0, 12, 2, 0, 0, 24),
-            new Caliber("762x54", "7.62x54mm", 5, 0, 0, 12, 4, 0, 0, 30),
-            new Caliber("308", ".308 Winchester", 6, 0, 0, 12, 4, 1, 0, 24),
+            new Caliber("9mm", "9mm", 2, 0, 0, 12, 1, 0, 0, 20),
+            new Caliber("45acp", ".45 ACP", 4, 0, 0, 12, 1, 0, 0, 15),
+            new Caliber("357mag", ".357 Magnum", 3, 0, 0, 6, 2, 0, 0, 15),
+            new Caliber("50ae", ".50 AE", 5, 0, 0, 6, 3, 2, 0, 15),
+            new Caliber("46x30", "4.6x30mm", 3, 0, 0, 12, 1, 0, 0, 20),
+            new Caliber("57x28", "5.7x28mm", 4, 0, 0, 12, 1, 3, 0, 20),
+            new Caliber("58x42", "5.8x42mm", 4, 0, 0, 12, 1, 0, 0, 12),
+            new Caliber("68x51fury", "6.8x51mm FURY", 5, 0, 0, 12, 2, 0, 0, 15),
+            new Caliber("556x45", "5.56x45mm", 4, 0, 0, 12, 1, 0, 0, 15),
+            new Caliber("762x25", "7.62x25mm", 3, 0, 0, 12, 1, 0, 0, 20),
+            new Caliber("762x39", "7.62x39mm", 5, 0, 0, 12, 1, 0, 0, 12),
+            new Caliber("762x54", "7.62x54mm", 5, 0, 0, 12, 2, 0, 0, 15),
+            new Caliber("308", ".308 Winchester", 6, 0, 0, 12, 3, 1, 0, 20),
             new Caliber("30_06", ".30-06 Springfield", 10, 0, 0, 12, 3, 0, 0, 12),
             new Caliber("338", ".338 Lapua Magnum", 9, 0, 0, 6, 5, 3, 0, 12),
             new Caliber("50bmg", ".50 BMG", 28, 0, 0, 6, 10, 6, 1, 12),
@@ -97,9 +97,9 @@ public class AmmoItems {
                 case "50bmg", "rpg_rocket" -> 256;
                 default -> 128;
             };
-            if (blanks < 1 || blanks > 12 || doses < 1 || doses > 30
+            if (blanks < 1 || blanks > 12 || doses < 1 || doses > 20
                     || (id.equals("40mm") || id.equals("rpg_rocket")
-                    ? blanks != 3 || doses != 3 : blanks % 6 != 0 || doses % 6 != 0))
+                    ? blanks != 3 || doses != 3 : blanks % 6 != 0 || (doses != 12 && doses != 15 && doses != 20)))
                 throw new IllegalArgumentException("Invalid ammunition batch: " + id);
             this.gunpowder = gunpowder;
             this.lapis = lapis;
@@ -111,6 +111,7 @@ public class AmmoItems {
                     .lang(name + " Ammunition Mold")
                     .register();
             powder = AmmoCraft.REGISTRATE.item("ammo_powder_" + id, Item::new)
+                    .properties(p -> p.stacksTo(60))
                     .model((c, p) -> p.generated(c::getEntry, AmmoCraft.id("item/ammo/powders/" + id)))
                     .lang(name + " Propellant").register();
             casing = AmmoCraft.REGISTRATE.item("casing_" + id, AmmoCasingItem::new)

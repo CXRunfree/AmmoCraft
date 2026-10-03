@@ -127,9 +127,68 @@ public class AmmoPipelineTests {
                 if (extracted.is(caliber.casing.get())) received += extracted.getCount();
             }
         }
-        check(helper, received == 72, "Must retry output after blockage: expected 72, got " + received);
+        check(helper, received == 72, "Must retry output after blockage: expected 72, got " + received
+                + "; output=" + basin.getOutputInventory().serializeNBT() + "; basin=" + basin.saveWithFullMetadata());
         check(helper, basin.getOutputInventory().isEmpty(), "The extra 12 casings must not remain stranded");
         check(helper, basin.inputInventory.getStackInSlot(0).getCount() == 3, "Retry must preserve input casings");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void oversizedCasingBufferDrains(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 2, 1);
+        helper.setBlock(pos, AllBlocks.BASIN.getDefaultState().setValue(
+                com.simibubi.create.content.contraptions.processing.BasinBlock.FACING, net.minecraft.core.Direction.EAST));
+        helper.setBlock(pos.east().below(), AllBlocks.DEPOT.getDefaultState());
+        BasinTileEntity basin = (BasinTileEntity) helper.getBlockEntity(pos);
+        var receiver = helper.getBlockEntity(pos.east().below()).getCapability(
+                net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).orElseThrow(IllegalStateException::new);
+        AmmoItems.Caliber caliber = AmmoItems.CALIBERS.get(0);
+        ItemStack overflow = new ItemStack(caliber.casing.get(), 72);
+        overflow.getOrCreateTag().putString("Batch", "overflow");
+        check(helper, basin.acceptOutputs(List.of(overflow), List.of(), false), "Seed casing overflow buffer");
+        int received = 0;
+        for (int tick = 0; tick < 12; tick++) {
+            basin.tick();
+            ItemStack extracted = receiver.extractItem(0, 64, false);
+            if (extracted.isEmpty()) continue;
+            check(helper, extracted.is(caliber.casing.get()) && extracted.getCount() <= 60,
+                    "Buffered outputs must use legal casing stacks");
+            check(helper, "overflow".equals(extracted.getOrCreateTag().getString("Batch")), "Casing NBT must survive");
+            received += extracted.getCount();
+        }
+        check(helper, received == 72, "Oversized buffer must drain completely: got " + received);
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void hopperExtractsBlockedCasingBuffer(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 2, 1);
+        helper.setBlock(pos, AllBlocks.BASIN.getDefaultState().setValue(
+                com.simibubi.create.content.contraptions.processing.BasinBlock.FACING, net.minecraft.core.Direction.EAST));
+        helper.setBlock(pos.east().below(), AllBlocks.DEPOT.getDefaultState());
+        helper.setBlock(pos.below(), net.minecraft.world.level.block.Blocks.HOPPER.defaultBlockState());
+        BasinTileEntity basin = (BasinTileEntity) helper.getBlockEntity(pos);
+        var receiver = helper.getBlockEntity(pos.east().below()).getCapability(
+                net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).orElseThrow(IllegalStateException::new);
+        receiver.insertItem(0, new ItemStack(Items.COBBLESTONE, 64), false);
+        AmmoItems.Caliber caliber = AmmoItems.CALIBERS.get(0);
+        check(helper, basin.acceptOutputs(List.of(new ItemStack(caliber.casing.get(), 12)), List.of(), false),
+                "Seed blocked casing buffer");
+        basin.tick();
+        var hopper = (net.minecraft.world.level.block.entity.HopperBlockEntity) helper.getBlockEntity(pos.below());
+        for (int i = 0; i < 12; i++)
+            check(helper, net.minecraft.world.level.block.entity.HopperBlockEntity.suckInItems(helper.getLevel(), hopper),
+                    "Hopper must access stranded casing output");
+        int received = 0;
+        for (int slot = 0; slot < hopper.getContainerSize(); slot++) {
+            ItemStack stack = hopper.getItem(slot);
+            if (stack.is(caliber.casing.get())) received += stack.getCount();
+        }
+        check(helper, received == 12, "Hopper must recover the whole buffered batch");
+        receiver.extractItem(0, 64, false);
+        basin.tick();
+        check(helper, receiver.getStackInSlot(0).isEmpty(), "Hopper extraction must not duplicate spout output");
         helper.succeed();
     }
 
@@ -317,6 +376,8 @@ public class AmmoPipelineTests {
             clear(basin);
             Recipe<?> recipe = helper.getLevel().getRecipeManager()
                     .byKey(new ResourceLocation("ammocraft", "mixing/ammo_powder/" + caliber.id)).orElseThrow();
+            check(helper, caliber.powder.get().getDefaultInstance().getMaxStackSize() == 60,
+                    "Powder stack limit must be 60: " + caliber.id);
             check(helper, recipe.getType() == AllRecipeTypes.MIXING.getType(), "Powder must require mixing");
             check(helper, helper.getLevel().getRecipeManager().getRecipes().stream()
                     .noneMatch(r -> r instanceof CraftingRecipe && r.getResultItem().is(caliber.powder.get())),

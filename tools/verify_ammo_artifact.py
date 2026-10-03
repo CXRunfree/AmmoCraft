@@ -2,7 +2,6 @@
 from collections import Counter
 from contextlib import nullcontext
 from fractions import Fraction
-from math import lcm
 from io import BytesIO
 from pathlib import Path
 import json
@@ -29,11 +28,11 @@ METALS = {
 }
 # Gunpowder, lapis dust, blaze powder and output count for independent charge batches.
 POWDERS = {
-    '9mm': (1, 0, 0, 24), '45acp': (2, 0, 0, 30), '357mag': (3, 0, 0, 24),
-    '50ae': (5, 3, 0, 24), '46x30': (1, 0, 0, 24), '57x28': (1, 3, 0, 24),
-    '58x42': (2, 0, 0, 24), '68x51fury': (3, 0, 0, 24), '556x45': (2, 0, 0, 30),
-    '762x25': (1, 0, 0, 24), '762x39': (2, 0, 0, 24), '762x54': (4, 0, 0, 30),
-    '308': (4, 1, 0, 24), '30_06': (3, 0, 0, 12), '338': (5, 3, 0, 12),
+    '9mm': (1, 0, 0, 20), '45acp': (1, 0, 0, 15), '357mag': (2, 0, 0, 15),
+    '50ae': (3, 2, 0, 15), '46x30': (1, 0, 0, 20), '57x28': (1, 3, 0, 20),
+    '58x42': (1, 0, 0, 12), '68x51fury': (2, 0, 0, 15), '556x45': (1, 0, 0, 15),
+    '762x25': (1, 0, 0, 20), '762x39': (1, 0, 0, 12), '762x54': (2, 0, 0, 15),
+    '308': (3, 1, 0, 20), '30_06': (3, 0, 0, 12), '338': (5, 3, 0, 12),
     '50bmg': (10, 6, 1, 12), '12g': (4, 0, 0, 12), '40mm': (5, 0, 0, 3),
     'rpg_rocket': (12, 0, 0, 3),
 }
@@ -154,10 +153,10 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
         assert all(result['item'] == powder and 1 <= result.get('count', 1) <= 64
                    for result in propellant['results'])
         output_count = sum(result.get('count', 1) for result in propellant['results'])
-        assert 1 <= count <= 12 and 1 <= output_count <= 30
+        assert 1 <= count <= 12 and output_count in (3, 12, 15, 20)
+        assert 60 % output_count == 0, f'Powder batch must divide its 60-item stack: {caliber}'
         assert count < stack_size and output_count < stack_size, f'Batch must be smaller than a stack: {caliber}'
-        assert lcm(count, output_count) % 6 == 0 or caliber in ('40mm', 'rpg_rocket')
-        assert (stack_size * 2) % lcm(count, output_count) == 0
+        assert 60 % count == 0, f'Casing batch must divide its 60-item stack: {caliber}'
         charges = ingredients(propellant)
         expected_powder, expected_lapis, expected_blaze, expected_output = POWDERS[caliber]
         assert output_count == expected_output
@@ -175,7 +174,9 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
             output = output_count if tag in ('forge:gunpowder', 'forge:gems/lapis', 'forge:rods/blaze') else count
             baseline = reference.get(tag, 0)
             if baseline:
-                bound = Fraction(3, 2) if caliber == '308' and tag == 'forge:gems/lapis' else Fraction(1, 3)
+                # Approved rounded batches exceed the old TaCZ lapis tolerance.
+                lapis_bounds = {'57x28': Fraction(1, 2), '308': Fraction(2)}
+                bound = lapis_bounds.get(caliber, Fraction(1, 3)) if tag == 'forge:gems/lapis' else Fraction(1, 3)
                 assert abs(Fraction(amount, output) / baseline - 1) <= bound, (caliber, tag)
                 if caliber == 'rpg_rocket':
                     assert Fraction(amount, output) == baseline
@@ -221,7 +222,11 @@ with (nullcontext(SourceResources()) if source_mode else zipfile.ZipFile(artifac
     assert set(data('ammocraft.mixins.json')['mixins']) == {
         'BasinAmmoMoldMixin', 'BasinCasingOutputMixin', 'DeployerAmmoParticlesMixin', 'DeployerFakePlayerAccessor'}
     assert not any(name.endswith('/CasingOutputAccess.class') for name in names)
+    assert data('ammocraft.mixins.json')['client'] == ['client.BasinMoldJeiMixin']
     if not source_mode:
+        assert 'cn/crtlprototypestudios/ammocraft/mixin/client/BasinMoldJeiMixin.class' in names
+        assert 'cn/crtlprototypestudios/ammocraft/compat/jei/BasinMoldRenderer.class' in names
+        assert not any(name.startswith('mezz/jei/') for name in names), 'JEI must not be bundled'
         assert 'cn/crtlprototypestudios/ammocraft/mixin/BasinCasingOutputMixin.class' in names
         assert list((ROOT / 'build/libs').glob('*.jar')) == [artifact], 'Build must produce only one distributable JAR'
         metadata = jar.read('META-INF/mods.toml').decode('utf-8')
